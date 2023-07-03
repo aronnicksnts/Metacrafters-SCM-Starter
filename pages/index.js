@@ -59,19 +59,81 @@ export default function HomePage() {
     }
   }
 
+  const getAmount = () => {
+    let amount = document.getElementById("amount").value;
+    // Check if amount is a positive number and not a string
+    if (isNaN(amount) || amount <= 0) {
+      alert("Please enter a valid amount"); 
+      return -1;
+    }
+    return amount;
+  }
+
   const deposit = async() => {
     if (atm) {
-      let tx = await atm.deposit(1);
+      let amount = getAmount();
+      // Check if amount is valid
+      if (amount == -1) {
+        return;
+      }
+      let tx = await atm.deposit(amount);
       await tx.wait()
       getBalance();
     }
   }
 
+  const enoughFunds = (amount) => {
+    if (amount > balance) {
+      alert("You do not have enough funds to withdraw " + amount + " ETH.");
+      return false;
+    }
+    return true;
+  }
+
   const withdraw = async() => {
     if (atm) {
-      let tx = await atm.withdraw(1);
+      let amount = getAmount();
+      if (amount == -1) {
+        return;
+      }
+      // Check if user has enough funds to withdraw
+      if (!enoughFunds(amount)) {
+        return;
+      }
+      let tx = await atm.withdraw(amount);
       await tx.wait()
       getBalance();
+    }
+  }
+
+  // Function bets 1 ETH in which if the user wins, they get an additional ether, but if they lose
+  // they lose their ether
+  const betEther = async() => {
+    if (atm) {
+      // Get user's guess
+      let guess = document.getElementById("guess").value;
+
+      // Check to see if guess is valid
+      if (guess != 0 && guess != 1) {
+        alert("Please enter a valid guess (0 or 1)");
+        return;
+      }
+
+      // Random number between 0 and 1
+      let results = document.getElementById("results");
+      let randomNumber = Math.floor(Math.random() * 2);
+      if (randomNumber == guess) {
+        let tx = await atm.deposit(1);
+        await tx.wait()
+        getBalance();
+        results.innerHTML = "You won! You now have " + (balance+1) + " ETH.";
+      }
+      else {
+        let tx = await atm.withdraw(1);
+        await tx.wait()
+        getBalance();
+        results.innerHTML = "You lost! You now have " + (balance-1) + " ETH.";
+      }
     }
   }
 
@@ -94,8 +156,15 @@ export default function HomePage() {
       <div>
         <p>Your Account: {account}</p>
         <p>Your Balance: {balance}</p>
+        <input type="text" id="amount" name="amount"></input>
+        <br></br>
+        <br></br>
         <button onClick={deposit}>Deposit 1 ETH</button>
         <button onClick={withdraw}>Withdraw 1 ETH</button>
+        <p>Enter your guess (0 or 1):</p>
+        <input type="text" id="guess" name="guess"></input>
+        <button onClick={betEther}>Bet 1 ETH</button>
+        <p id="results"></p>
       </div>
     )
   }
