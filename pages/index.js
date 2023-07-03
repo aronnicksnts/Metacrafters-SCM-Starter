@@ -159,8 +159,8 @@ export default function HomePage() {
         <input type="text" id="amount" name="amount"></input>
         <br></br>
         <br></br>
-        <button onClick={deposit}>Deposit 1 ETH</button>
-        <button onClick={withdraw}>Withdraw 1 ETH</button>
+        <button onClick={deposit}>Deposit ETH</button>
+        <button onClick={withdraw}>Withdraw ETH</button>
         <p>Enter your guess (0 or 1):</p>
         <input type="text" id="guess" name="guess"></input>
         <button onClick={betEther}>Bet 1 ETH</button>
