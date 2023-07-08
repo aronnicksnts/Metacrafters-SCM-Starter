@@ -55,7 +55,9 @@ export default function HomePage() {
 
   const getBalance = async() => {
     if (atm) {
-      setBalance((await atm.getBalance()).toNumber());
+      let currBalance = await atm.getBalance();
+      currBalance = ethers.utils.formatEther(currBalance);
+      setBalance(currBalance);
     }
   }
 
@@ -76,9 +78,17 @@ export default function HomePage() {
       if (amount == -1) {
         return;
       }
-      let tx = await atm.deposit(amount);
-      await tx.wait()
-      getBalance();
+      try{
+        const parsedAmount = ethers.utils.parseEther(amount.toString());
+        let tx = await atm.deposit({ value: ethers.utils.parseEther(amount.toString()) });
+        await tx.wait()
+        getBalance();
+
+      }
+      catch (err) {
+        alert("Only owner can deposit funds");
+        console.log(err);
+      }
     }
   }
 
@@ -104,6 +114,34 @@ export default function HomePage() {
       await tx.wait()
       getBalance();
     }
+  }
+
+  const transferEther = async () => {
+    if (!atm) {
+      return
+    }
+
+    let amount = getAmount();
+    amount = ethers.utils.parseEther(amount.toString());
+    let toAddress = document.getElementById("toAddress").value;
+    if (amount == -1 || !validateAddress(toAddress) || !enoughFunds(amount)) {
+      return;
+    }
+    // Transfer balance to another account
+    
+    let tx = await atm.transfer(toAddress, amount);
+    await tx.wait();
+    getBalance();
+
+  }
+
+  const validateAddress = (address) => {
+    // Check if address is valid and starts with 0x
+    if (address.substring(0,2) != "0x" && address.length != 42) {
+      alert("Please enter a valid address");
+      return false;
+    }
+    return true;
   }
 
   // Function bets 1 ETH in which if the user wins, they get an additional ether, but if they lose
@@ -156,15 +194,19 @@ export default function HomePage() {
       <div>
         <p>Your Account: {account}</p>
         <p>Your Balance: {balance}</p>
+        <p>Amount</p>
         <input type="text" id="amount" name="amount"></input>
         <br></br>
-        <br></br>
-        <button onClick={deposit}>Deposit ETH</button>
-        <button onClick={withdraw}>Withdraw ETH</button>
+        <button onClick={deposit}>Mint ETH</button>
+        <button onClick={withdraw}>Burn ETH</button>
+        <p>Transfer Amount of ETH to address</p>
+        <input type="text" id="toAddress" name="toAddress"></input>
+        <button onClick={transferEther}>Transfer ETH</button>
         <p>Enter your guess (0 or 1):</p>
         <input type="text" id="guess" name="guess"></input>
         <button onClick={betEther}>Bet 1 ETH</button>
         <p id="results"></p>
+
       </div>
     )
   }
