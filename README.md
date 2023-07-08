@@ -20,6 +20,10 @@ Typically at http://localhost:3000/
 - enoughFunds()
   - This function checks if the user has enough ether to withdraw from the wallet
 - deposit()
-  - This function adds ether to the user's wallet
+  - This function adds ether to the user's wallet. Only the contract owner can deposit/mint tokens
 - betEther()
   - This function either adds or removes ether from the user's wallet depending if they were able to guess the randomized number
+- transfer()
+  - This function can transfer ether from one account to another
+- validateAddress()
+  - This function checks if the address is valid in the input field
