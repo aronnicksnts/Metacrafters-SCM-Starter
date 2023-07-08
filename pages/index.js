@@ -110,7 +110,7 @@ export default function HomePage() {
       if (!enoughFunds(amount)) {
         return;
       }
-      let tx = await atm.withdraw(amount);
+      let tx = await atm.withdraw(ethers.utils.parseEther(amount.toString()));
       await tx.wait()
       getBalance();
     }
